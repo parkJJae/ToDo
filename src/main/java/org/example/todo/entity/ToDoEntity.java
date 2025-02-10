@@ -21,4 +21,5 @@ public class ToDoEntity {
 
     private String title;
     private boolean completed;
+
 }
