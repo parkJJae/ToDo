@@ -15,6 +15,10 @@ public class TodoController {
         this.todoService = todoService;
     }
 
+    @GetMapping("/")
+    public String getHomePage() {
+        return "index";
+    }
     @GetMapping
     public List<ToDoEntity> getAllTodos() {
         return todoService.getAllTodos();
@@ -29,4 +33,5 @@ public class TodoController {
     public void deleteTodo(@PathVariable Long id){
         todoService.deleteTodo(id);
     }
+
 }
