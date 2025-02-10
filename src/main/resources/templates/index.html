@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .todo-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .todo-item button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h1>ToDo List</h1>
+<form id="todo-form">
+    <input type="text" id="todo-title" placeholder="할 일을 입력하세요" required>
+    <button type="submit">할 일 추가</button>
+</form>
+
+<ul id="todo-list" class="todo-list">
+    <!-- ToDo 목록이 여기에 표시됩니다 -->
+</ul>
+
+<script>
+    document.getElementById('todo-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const title = document.getElementById('todo-title').value;
+
+        fetch('http://localhost:8080/todos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title: title, description: '', completed: false })
+        })
+            .then(response => response.json())
+            .then(todo => {
+                const todoList = document.getElementById('todo-list');
+                const todoItem = document.createElement('li');
+                todoItem.classList.add('todo-item');
+                todoItem.innerHTML = `
+                    ${todo.title}
+                    <button onclick="deleteTodo(${todo.id})">Delete</button>
+                `;
+                todoList.appendChild(todoItem);
+                document.getElementById('todo-title').value = '';
+            })
+            .catch(error => console.log('Error:', error));
+    });
+
+    function deleteTodo(id) {
+        fetch(`http://localhost:8080/todos/${id}`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (response.ok) {
+                    // 서버에서 삭제 성공 시, 해당 todo를 화면에서 삭제합니다.
+                    document.getElementById('todo-list').removeChild(document.querySelector(`button[onclick="deleteTodo(${id})"]`).parentElement);
+                }
+            })
+            .catch(error => console.log('Error:', error));
+    }
+
+    // 페이지가 로드되면 할 일 목록을 가져옵니다
+    window.onload = function() {
+        fetch('http://localhost:8080/todos')
+            .then(response => response.json())
+            .then(data => {
+                const todoList = document.getElementById('todo-list');
+                todoList.innerHTML = '';  // 기존 목록 초기화
+                data.forEach(todo => {
+                    const li = document.createElement('li');
+                    li.classList.add('todo-item');
+                    li.innerHTML = `
+                        ${todo.title}
+                        <button onclick="deleteTodo(${todo.id})">Delete</button>
+                    `;
+                    todoList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    };
+</script>
+</body>
+</html>
